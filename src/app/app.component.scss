@@ -1,7 +1,19 @@
-.example-stepper {
+.order-form-stepper {
   margin-top: 5rem;
 }
 
 .mat-form-field {
   margin-top: 16px;
+  margin-right: 16px;
+}
+
+.stepper-button,
+.delivery-checkbox {
+  margin-top: 16px;
+}
+
+@media screen and (max-width: 800px) {
+  .container {
+    text-align: center;
+  }
 }
