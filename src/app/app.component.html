@@ -16,7 +16,7 @@
       class="order-form-stepper"
       [orientation]="(stepperOrientation | async)!"
     >
-      <!-- Contact Details -->
+      <!-- Contact Details Step -->
       <mat-step
         [stepControl]="contactDetailsFG"
         label="Enter your contact details"
@@ -84,7 +84,24 @@
             </mat-form-field>
           </div>
 
-          <div>
+          <div class="delivery-radio-button">
+            <!-- City -->
+            <div *ngIf="delivery.value">
+              <label
+                id="lblCity"
+                class="mr-1"
+              >Select your city:</label>
+              <mat-radio-group
+                aria-labelledby="lblCity"
+                [formControl]="where"
+              >
+                <mat-radio-button
+                  *ngFor="let item of deliveryPrices"
+                  [value]="item.where"
+                >{{ item.where }}</mat-radio-button>
+              </mat-radio-group>
+            </div>
+
             <!-- Address -->
             <mat-form-field
               *ngIf="delivery.value"
@@ -118,25 +135,81 @@
         </form>
       </mat-step>
 
+      <!-- Place Order Step -->
       <mat-step
-        [stepControl]="secondFormGroup"
-        label="Fill out your address"
+        [stepControl]="placeOrderFG"
+        label="Place your order"
+        errorMessage="Order details are required."
       >
-        <form [formGroup]="secondFormGroup">
+        <form [formGroup]="placeOrderFG">
           <mat-form-field appearance="fill">
-            <mat-label>Address</mat-label>
-            <input
-              matInput
-              formControlName="secondCtrl"
-              placeholder="Ex. 1 Main St, New York, NY"
-              required
+            <mat-label>Order Type:</mat-label>
+            <mat-select
+              [formControl]="orderType"
+              (selectionChange)="updateOrderType()"
             >
+              <mat-option
+                *ngFor="let type of orderTypes"
+                [value]="type.id"
+              >
+                {{ type.value }}
+              </mat-option>
+            </mat-select>
           </mat-form-field>
+
+          <ng-container [ngSwitch]="orderType.value">
+            <!-- Variety Order -->
+            <div *ngSwitchCase="OrderTypeEnum.VARIETY">
+              Variety
+            </div>
+
+            <!-- Custom Order -->
+            <div *ngSwitchCase="OrderTypeEnum.CUSTOM">
+              <mat-form-field appearance="fill">
+                <mat-label>Enter your custom order</mat-label>
+                <textarea
+                  matInput
+                  [formControl]="customOrder"
+                ></textarea>
+                <mat-error *ngIf="customOrder.invalid">Please enter your custom order.</mat-error>
+              </mat-form-field>
+            </div>
+
+            <!-- Choose Order -->
+            <div *ngSwitchDefault>
+              <div class="cookie-grid">
+                <div class="row">
+                  <div
+                    class="column"
+                    style="background-color:#aaa;"
+                  >
+                    <h2>Column 1</h2>
+                    <p>Some text..</p>
+                  </div>
+                  <div
+                    class="column"
+                    style="background-color:#bbb;"
+                  >
+                    <h2>Column 2</h2>
+                    <p>Some text..</p>
+                  </div>
+                  <div
+                    class="column"
+                    style="background-color:#ccc;"
+                  >
+                    <h2>Column 3</h2>
+                    <p>Some text..</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
           <div>
             <button
               mat-button
               matStepperPrevious
-              class="stepper-button"
+              class="stepper-button mr-1"
               mat-raised-button
               color="accent"
             >Back</button>
@@ -146,15 +219,17 @@
               class="stepper-button"
               mat-raised-button
               color="primary"
+              [disabled]="!placeOrderFG.valid"
             >Next</button>
           </div>
         </form>
       </mat-step>
+
       <mat-step
-        [stepControl]="thirdFormGroup"
+        [stepControl]="confirmFG"
         label="Fill out your phone number"
       >
-        <form [formGroup]="thirdFormGroup">
+        <form [formGroup]="confirmFG">
           <mat-form-field appearance="fill">
             <mat-label>Phone number</mat-label>
             <input
