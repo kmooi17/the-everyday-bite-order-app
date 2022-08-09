@@ -1,12 +1,11 @@
 <mat-toolbar class="toolbar">
-  <span class="title">The Everyday Bite Order Form</span>
+  <span class="title">The Everyday Bite Order App - V1</span>
 </mat-toolbar>
 
+<app-cookie-slide></app-cookie-slide>
+
 <router-outlet>
-  <ng-container
-    [ngSwitch]="stepperOrientation | async"
-    MaterialModule
-  >
+  <ng-container [ngSwitch]="stepperOrientation | async" MaterialModule>
     <div *ngSwitchCase="'horizontal'"></div>
     <div *ngSwitchCase="'vertical'"></div>
   </ng-container>
@@ -14,6 +13,7 @@
   <div class="container">
     <mat-stepper
       class="order-form-stepper"
+      [linear]="true"
       [orientation]="(stepperOrientation | async)!"
     >
       <!-- Contact Details Step -->
@@ -31,9 +31,18 @@
                 matInput
                 [formControl]="name"
                 type="text"
+                [minlength]="ValidLengthEnum.MIN"
+                [maxlength]="ValidLengthEnum.DEFAULT"
                 required
+              />
+              <mat-error *ngIf="name.invalid">{{
+                getFullNameErrorMessage()
+              }}</mat-error>
+              <mat-hint align="start">Name & Surname</mat-hint>
+              <mat-hint align="end"
+                >{{ name.value.length }} /
+                {{ ValidLengthEnum.DEFAULT }}</mat-hint
               >
-              <mat-error *ngIf="name.invalid">Please enter your full name.</mat-error>
             </mat-form-field>
 
             <!-- Email Address -->
@@ -43,9 +52,16 @@
                 matInput
                 [formControl]="email"
                 type="email"
+                [maxlength]="ValidLengthEnum.EMAIL"
                 required
+              />
+              <mat-error *ngIf="email.invalid">{{
+                getEmailErrorMessage()
+              }}</mat-error>
+              <mat-hint align="end"
+                >{{ email.value.length }} /
+                {{ ValidLengthEnum.EMAIL }}</mat-hint
               >
-              <mat-error *ngIf="email.invalid">{{ getEmailErrorMessage() }}</mat-error>
             </mat-form-field>
           </div>
 
@@ -57,9 +73,16 @@
                 matInput
                 [formControl]="cell"
                 type="tel"
+                [minlength]="ValidLengthEnum.CELL"
+                [maxlength]="ValidLengthEnum.CELL"
                 required
+              />
+              <mat-error *ngIf="cell.invalid">{{
+                getCellErrorMessage()
+              }}</mat-error>
+              <mat-hint align="end"
+                >{{ cell.value.length }} / {{ ValidLengthEnum.CELL }}</mat-hint
               >
-              <mat-error *ngIf="cell.invalid">{{ getCellErrorMessage() }}</mat-error>
             </mat-form-field>
 
             <!-- Date Needed -->
@@ -73,55 +96,51 @@
                 [formControl]="orderNeeded"
                 type="datetime"
                 required
-              >
+              />
               <mat-datepicker-toggle
                 matSuffix
                 [for]="picker"
               ></mat-datepicker-toggle>
               <mat-datepicker #picker></mat-datepicker>
-              <mat-hint>*Please note that orders need to be made at least 48 hours in advance.</mat-hint>
-              <mat-error *ngIf="orderNeeded.invalid">Please enter the date your order is needed.</mat-error>
+              <mat-hint
+                >*Please note that orders need to be made at least 48 hours in
+                advance.</mat-hint
+              >
+              <mat-error *ngIf="orderNeeded.invalid"
+                >Please enter the date your order is needed.</mat-error
+              >
             </mat-form-field>
           </div>
 
           <div class="delivery-radio-button">
             <!-- City -->
-            <div *ngIf="delivery.value">
-              <label
-                id="lblCity"
-                class="mr-1"
-              >Select your city:</label>
-              <mat-radio-group
-                aria-labelledby="lblCity"
-                [formControl]="where"
+            <label id="lblCity" class="mr-1">Select your city:</label>
+            <mat-radio-group aria-labelledby="lblCity" [formControl]="where">
+              <mat-radio-button
+                *ngFor="let item of deliveryPrices"
+                [value]="item.where"
+                >{{ item.where }}</mat-radio-button
               >
-                <mat-radio-button
-                  *ngFor="let item of deliveryPrices"
-                  [value]="item.where"
-                >{{ item.where }}</mat-radio-button>
-              </mat-radio-group>
-            </div>
+            </mat-radio-group>
+          </div>
 
+          <div>
             <!-- Address -->
-            <mat-form-field
-              *ngIf="delivery.value"
-              appearance="fill"
-            >
+            <mat-form-field appearance="fill">
               <mat-label>Enter your physical address</mat-label>
               <textarea
                 matInput
                 [formControl]="address"
+                [maxlength]="ValidLengthEnum.MAX"
               ></textarea>
-              <mat-error *ngIf="address.invalid">Please enter your physical address.</mat-error>
+              <mat-error *ngIf="address.invalid"
+                >Please enter your physical address.</mat-error
+              >
+              <mat-hint align="end"
+                >{{ address.value.length }} /
+                {{ ValidLengthEnum.MAX }}</mat-hint
+              >
             </mat-form-field>
-
-            <!-- Delivery -->
-            <mat-checkbox
-              class="delivery-checkbox"
-              color="primary"
-              (change)="updateDeliveryChecked()"
-              [formControl]="delivery"
-            >Delivery</mat-checkbox>
           </div>
 
           <button
@@ -130,8 +149,9 @@
             color="primary"
             matStepperNext
             [disabled]="!contactDetailsFG.valid"
-            (click)="test()"
-          >Next</button>
+          >
+            Next
+          </button>
         </form>
       </mat-step>
 
@@ -143,67 +163,20 @@
       >
         <form [formGroup]="placeOrderFG">
           <mat-form-field appearance="fill">
-            <mat-label>Order Type:</mat-label>
-            <mat-select
-              [formControl]="orderType"
-              (selectionChange)="updateOrderType()"
+            <mat-label>Enter your custom order</mat-label>
+            <textarea
+              matInput
+              [formControl]="customOrder"
+              [maxlength]="ValidLengthEnum.MAX"
+            ></textarea>
+            <mat-error *ngIf="customOrder.invalid"
+              >Please enter your custom order.</mat-error
             >
-              <mat-option
-                *ngFor="let type of orderTypes"
-                [value]="type.id"
-              >
-                {{ type.value }}
-              </mat-option>
-            </mat-select>
+            <mat-hint align="end"
+              >{{ customOrder.value.length }} /
+              {{ ValidLengthEnum.MAX }}</mat-hint
+            >
           </mat-form-field>
-
-          <ng-container [ngSwitch]="orderType.value">
-            <!-- Variety Order -->
-            <div *ngSwitchCase="OrderTypeEnum.VARIETY">
-              Variety
-            </div>
-
-            <!-- Custom Order -->
-            <div *ngSwitchCase="OrderTypeEnum.CUSTOM">
-              <mat-form-field appearance="fill">
-                <mat-label>Enter your custom order</mat-label>
-                <textarea
-                  matInput
-                  [formControl]="customOrder"
-                ></textarea>
-                <mat-error *ngIf="customOrder.invalid">Please enter your custom order.</mat-error>
-              </mat-form-field>
-            </div>
-
-            <!-- Choose Order -->
-            <div *ngSwitchDefault>
-              <div class="cookie-grid">
-                <div class="row">
-                  <div
-                    class="column"
-                    style="background-color:#aaa;"
-                  >
-                    <h2>Column 1</h2>
-                    <p>Some text..</p>
-                  </div>
-                  <div
-                    class="column"
-                    style="background-color:#bbb;"
-                  >
-                    <h2>Column 2</h2>
-                    <p>Some text..</p>
-                  </div>
-                  <div
-                    class="column"
-                    style="background-color:#ccc;"
-                  >
-                    <h2>Column 3</h2>
-                    <p>Some text..</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </ng-container>
 
           <div>
             <button
@@ -212,7 +185,9 @@
               class="stepper-button mr-1"
               mat-raised-button
               color="accent"
-            >Back</button>
+            >
+              Back
+            </button>
             <button
               mat-button
               matStepperNext
@@ -220,46 +195,46 @@
               mat-raised-button
               color="primary"
               [disabled]="!placeOrderFG.valid"
-            >Next</button>
+            >
+              Next
+            </button>
           </div>
         </form>
       </mat-step>
 
-      <mat-step
-        [stepControl]="confirmFG"
-        label="Fill out your phone number"
-      >
-        <form [formGroup]="confirmFG">
-          <mat-form-field appearance="fill">
-            <mat-label>Phone number</mat-label>
-            <input
-              matInput
-              formControlName="thirdCtrl"
-              placeholder="Ex. 12345678"
-              required
-            >
-          </mat-form-field>
-          <div>
-            <button
-              mat-button
-              matStepperPrevious
-            >Back</button>
-            <button
-              mat-button
-              matStepperNext
-            >Next</button>
-          </div>
-        </form>
-      </mat-step>
-      <mat-step>
-        <ng-template matStepLabel>Done</ng-template>
-        <p>You are now done.</p>
+      <mat-step label="Confirm your order">
+        <h3>{{ customOrder.value }}</h3>
         <div>
           <button
             mat-button
             matStepperPrevious
-          >Back</button>
+            class="stepper-button mr-1"
+            mat-raised-button
+            color="accent"
+          >
+            Back
+          </button>
+          <button
+            mat-button
+            matStepperNext
+            class="stepper-button"
+            mat-raised-button
+            color="primary"
+            (click)="submitOrder()"
+          >
+            Submit Order
+          </button>
         </div>
+      </mat-step>
+
+      <mat-step>
+        <ng-template matStepLabel>Done</ng-template>
+        <h2>Your order has been placed!</h2>
+        <p>
+          We will get back to you within in the next 4 hours in order to make
+          payment & organize delivery for your delicious treats.
+        </p>
+        <p>Thank you so much for choosing `The Everyday Bite`.</p>
       </mat-step>
     </mat-stepper>
   </div>

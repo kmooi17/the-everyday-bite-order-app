@@ -1,0 +1,10 @@
+<div class="slideshow-container">
+  <div *ngFor="let item of cookies; index as i" class="slides fade">
+    <div class="numbertext">{{ i }} / {{ cookies.length }}</div>
+    <img [src]="'assets/images/' + item.image + '.jpg'" />
+    <div class="text">{{ item.flavour }}</div>
+  </div>
+
+  <a class="prev" (click)="plusSlides(-1)">❮</a>
+  <a class="next" (click)="plusSlides(1)">❯</a>
+</div>
